@@ -1,0 +1,489 @@
+============ O que aprendi ==================
+• Fundamentos do Next.js
+• Impacto do uso de Single Page Application em ferramentas de busca 
+• Quando e porque utilizar diferentes metodos de renderizacao da aplicacao
+• Utilização de conhecimentos SASS, Modulos CSS, TypeScript, Scoped CSS
+• Realização de assinatura de serviço através de conexão com a API Stripe
+• Conexão com Banco de Dados
+• Definicao, usos e configuracao do FaunaDB 
+• Utilização da API Routes do Next e parametrização da mesma
+• Modelo de execução Serverless e sua utilização
+• Utilização de CMS externo e resgate de seu conteúdo utilizando sua API
+• Definição e configuração do CMS headless Prismic
+• Conceituamento sobre diversos CMS, e quais utilizar em cada situacao 
+• Autenticacao com Next Auth utilizando provedor GitHub
+• Redirecionamentos utilizando Axios 
+
+============ Desafios superados =============
+
+• Atualizacao de codigo desatualizado para funcionar
+  com a utilização atual das linguagens utilizadas e
+  de ferramentas de terceiros
+
+============ O que vou usar =================
+
+• Compreensão do framework Next.js
+• Parâmetros dinâmicos em sites estáticos dentro do Next
+• Autenticação e barramento de acesso com Next Auth
+• Redirecionamento com Router do Next.js
+• Parametrização nas rotas 
+• Ecossistema geral da framework do Next.js 
+• Empregar Next Auth para autenticação
+• Linguagem TypeScript e sua forte relação com Next
+• Scoped CSS para evitar vazamentos de configurações de estilo para outras páginas
+• Experiência adquirida com os ambientes de configurações do Stripe, FaunaDB e suas integrações 
+• Quando, o porque e como usar Static Site Generation e Server Side Rendering
+
+=============================================
+                 ANOTACOES
+=============================================
+
+Inicializar:
+    $ yarn install
+	$ yarn stripe
+	$ yarn dev
+
+Link projeto:
+	https://www.figma.com/file/gl0fHkQgvaUfXNjuwGtDDs/ig.news?node-id=1%3A2
+
+• (SSG) Static Site Generation para reutilizacao de HTML com necessidade
+  de indexação de mecanismos de busca.
+• (SSR) Server-side Rendering quando necessitamos dessa indexação e de
+  dados dinamicos (usuario, contexto, etc).
+• (CSR) Client-side Rendering  quando nao necessita de indexacao, quando 
+  uma informacao e carregada atraves de uma acao de ususario, basicamente
+  quando uma informacao nao tem necessidade de estar la quando a pagina carrega.
+
+Extensoes novas:
+- DOTEnv: Para ter a sintaxe correta nos arquivos .env	
+
+Usaremos:
+	• Stripe (Pagamentos)
+	• Github (Autenticação + OAuth, usaremos github pois não temos back-end para criar uma atenticação do zero)
+	• Fauna DB (Banco de dados) -> Poderiamos usar DynamoDB também
+	• Prismic (CMS: Content Management System, como Wordpress por exemplo)
+		^ Painel de administração para cadastrar as informações e servir estes dados através de uma API 
+		
+	Fluxo do programa:
+	
+				  Github		Stripe	--------------\			/----> FaunaDB <----\ 
+					^			   ^				   |		|					|
+					|              |				   v		|					|
+					|			   |			Salvar informações da			Consumir  <------ Prismic CMS 
+	  Home --> Autenticação --> Incrição		Incrição do Usuário				 Posts    
+	
+|1|===--> FUNDAMENTOS DO NEXT <--===|1|
+Framework criado em cima do React
+Usaremos para utilizarmos em SSR (Server side rendering) ao inves
+de SPA (Single page application)
+	
+Criar aplicacao Next:
+	$ yarn create next-app nome 
+	(responder nao para qualquer pergunta de instalacao na hora da criacao)
+
+Usaremos para iniciar a aplicacao:
+	$ yarn dev
+
+Para o next, cada arquivo dentro de Pages vira uma rota (exceto _app e _document)
+
+
+|2|===--> ADICIONANDO TYPESCRIPT <--===|2|
+Feche o servidor, e execute:
+	$ yarn add typescript @types/react @types/node -D
+(esse comando adiciona o pacote de tipagens do react e do node)
+- Mudar .js das pages para .tsx
+Executar $ yarn dev 
+ ^ Ira iniciar a aplicacao e adicionar o typescript
+ 
+ 
+ 
+|3|===--> ESTILIZACAO COM SASS <--===|3| 
+
+Nextjs possui suporte nativo para Scoped CSS, fazendo com que um arquivo CSS 
+nao influencie em outros arquivos, evitando assim ''infecções'' indesejadas 
+
+Para utilizarmos o Scoped CSS basta trocarmos o nome de um arquivo 'arquivo.css'
+para 'arquivo.module.css'
+
+!! Quando utilizarmos CSS modules nao podemos fazer alteracoes num elemento de forma direta,  !!
+!! precisamos sempre comecar a estilizacao por uma classe/id !!		
+- O scoped adiciona uma hash exclusiva para cada elemento, reforcando assim a prevencao de ''infecções'' indesejadas				  
+Exemplo de scoped, que muda a classe .title: 
+
+	import styles from '../styles/home.module.css';
+
+	export default function Home() {
+	  return (
+		// Usamos uma variavel javascrpit para declarar a classe 
+		<h1 className={styles.title}>
+		  Hello World!
+		</h1>
+	  )
+	}
+
+- A extensao CSS Modules sera util
+
+Instalando SASS:
+	$ yarn add sass
+- Trocar arquivo.module.css para arquivo.module.scss
+- Podemos usar tambem somente .sass porem o uso semantico das chaves {} facilitam o entendimento da aplicacao
+
+|4|===--> CONFIGURANDO FONTE EXTERNA <--===|4| 
+
+Criaremos o arquivo _document.tsx dentro de pages, o arquivo document sera lido somente uma vez pela aplicacao.
+Ele extende o arquivo Document do next e sera declarado como classe
+
+|5|===--> CONFIGURANDO STRIPE <--===|5| 
+
+Stripe e uma plataforma de pagamento, usaremos por conta de sua homologação rapida
+
+ $ yarn add stripe
+
+|6|===--> STATIC SITE GERENATION (SSG) <--===|6| 
+
+Salva HTML (estatico) em cache, evitando chamado da API toda vez que alguem acessa o site
+!Usar somente em paginas que podem ser totalmente estaticas!
+
+
+---========>   ANOTACOES   <========---
+
+Usamos react icons no projeto, para instalar use:
+	$ yarn add react-icons
+	
+	
+	
+---=============================================---
+---==============>   BACK-END    <==============---
+---=============================================---
+|x|===--> BACK-END NO FRONT-END <--===|x| 
+|7|===--> API routes no Next.js <--===|7| 
+
+Qualquer documento dentro de pages que termina em .tsx (exceto app, document e estilos) 
+eles viram paginas na aplicacao.
+
+Todas essas apis hooks sao executadas SERVERLESS, as rotas dentro da pasta api nao forma um
+servidor, o que acontece e que toda vez que essa rota e chamada é subido um ambiente isolado
+(tipo uma maquina virtual) e executar a funcao, e quando ela devolve uma resposta esse ambiente
+isolado ''morre''
+
+
+!* Todos os dados acessados no front end podem ser acessados, podendo gerar problemas de seguranca
+
+Criar pasta api(minusculo) em pages, criar arquivo users.ts, exportarems default com (request, response) 
+na funcao, e tiparemos com NextApiRequest e NextApiResponse relativamente
+
+users.ts: 
+	import  { NextApiRequest, NextApiResponse } from 'next'
+
+	export default (request: NextApiRequest, response: NextApiResponse) => {
+	  const users = [
+		{ id: 1, name: 'Vitin' },
+		{ id: 2, name: 'Joao' },
+		{ id: 3, name: 'Jonas' },
+	  ]
+
+	  return response.json(users)
+	}
+
+Agora se formos em http://localhost:3000/api/users veremos um json com os dados
+
+|8|===--> Estratégias de autenticação do nextjs <--===|8| 
+
+   v- Json Web Tokens, pode ser aprimorado para um metodo mais seguro
+• JWT, salvo no storage e com um uma data de expiracao, geralmente baixa, que recebe
+  refresh caso for necessario
+   v- Usaremos este por conta de sua simplicidade
+• Next Auth, usamos quando queremos um sistema de autenticacao simples, principalmente
+  em logins por terceiro (social[github, google, etc...])
+• Servicoes externos, Cognito, Auth0
+
+|9|===--> Parametrização nas rotas <--===|9| 
+
+Iremos aprender como receber parametros dentro das rotas
+
+Crie users em api, renomeie users.ts para index.ts e jogue dentro de users,
+detro de users criamos uma pasta com [].tsx, e dentro dela colocamos o que queremos
+buscar (copie os conteudos de index.ts para dentro de [id].tsx)
+
+Podemos ter acesso agora, dentro da funcao, ao id atraves de request.query
+
+Fazendo com que tudo apos api/users/ seja passado como paramentro:
+Renomear para [...params].tsx (... vem do spread operator de js),
+com console.log(request.query) dentro deste arquivos, e usando a url
+localhost:3000/api/users/1/teste/abacaxi receberemos:
+  { params: [ '1', 'teste', 'abacaxi' ] }
+  
+  
+|10|===--> Autenticação com Next Auth <--===|10|  
+
+!*! VIDEO DESATUALIZADO !*!
+- Modificacaoes em:
+	declaracao do GithubProvider na pasta auth
+	index.tsx: trocar "next-auth/client" para "next-auth/react"
+	_app.tsx: trocar "next-auth/client" para "next-auth/providers"
+	declaracao de session em SignInButton -> index.tsx: (e em tudo que precisar de session)
+		usar: const { data: session } = useSession()
+		
+	
+
+Doocumentacao: https://next-auth.js.org/getting-started/example
+Adicionar next auth:
+ $ yarn add next-auth
+Adicionar suas tipagens para ts:
+ $ yarn add @types/next-auth -D
+
+Api -> auth -> [...nextauth].ts (o padrao seria .js porem usamos typescript)
+Jogar o codigo de exemplo da documentacao dentro
+
+Para usar a app com o github precisaremos de clientId e clientSecret
+
+Definindo scopos
+Escopos disponiveis: https://docs.github.com/pt/developers/apps/building-oauth-apps/scopes-for-oauth-apps
+[...nextauth].ts:
+	import NextAuth from "next-auth"
+	import GithubProvider from "next-auth/providers/github"
+	export const authOptions = {
+	  providers: [
+		GithubProvider({
+		  clientId: process.env.GITHUB_CLIENT_ID,
+		  clientSecret: process.env.GITHUB_CLIENT_SECRET,
+		  authorization: {
+			params: {
+			  // Declarando escopo:		
+			  scope: 'read:user', // Grants access to read a user's profile data.
+			},
+		  },
+		}),
+	  ]
+	}
+	export default NextAuth(authOptions)
+
+
+|xx|===--> USANDO FAUNA DB <--===|xx|  
+|11|===--> Escolhendo um banco de dados <--===|11|  
+
+Principais opcoes:
+	FaunaDB - HTTP
+	DynamoDB - AWS ( Amazon Web Services )
+
+Ate agora fizemos uma aplicacao que nao depende totalmente de um back-end, o que
+funciona bem para aplicacoes menores/com contexto muito especifico.
+
+Precimaos agora, asssim que o usuario logar, salvar informacoes no banco de dados.
+Usaremos FaunaDB, que é um banco de dados feito principalmente para aplicacaoes 
+serverless.
+
+Todas as operacoes feitas no FaunaDB (CRUD/CLAD) sao feitas por um protocolo
+que nao precisa manter uma conexao aberta com o banco de dados.
+
+Principal problema:
+Quando vamos utilizar em PostgreSQL ou MongoDB por exemplo precisamos de uma conexao
+ativa com o banco de dados e cada operacao feita no banco de dados reutiliza a conexao
+anterior, fazer a operacao dentro do banco nao e custoso, porem CRIAR uma conexao toda
+vez que uma funcao serverless for chamada é custoso (autenticar usuario por exemplo).
+Isso se torna mais impactante quando levamos em consideracao que um banco de dados 
+geralmente tem limite de conexoes.
+
+Ex:    
+    Servidor 24h:                  Serverless:
+Conexões: 1						 Se chamarmos a rota de autenticacao 500 vezes sera chamado 
+Reutiliza esta mesma conexao	 uma conexao 500 vezes
+para cada chamado 
+ 
+Ou seja, um back-end escrito em serverless é legal utilizarmos um banco de dados que nao
+precisem manter um pool de conexão aberto para conseguir realizar as operações
+
+
+|12|===--> Configurando FaunaDB <--===|12|  
+
+FaunaDB, banco de dados NAO RELACIONAL e SCHEMA FREE (sem colunas) 
+
+Criamos um indice para aumentar a performance da pesquisa do banco de dados
+
+Adicionar faunaDB:
+	$ yarn add faunadb
+
+em services, criar fauna.ts, conteudo:
+    import { Client } from 'faunadb';
+
+    // Pegar acesso ao banco de dados
+    export const fauna = new Client({
+      secret: process.env.FAUNADB_KEY
+    })
+
+|13|===--> Salvando usuário no banco <--===|13|  	
+
+Documentacao fauna dev: https://docs.fauna.com/fauna/current/build/tools/dev
+
+Callbacks sao basicamente funcoes que sao executadas de forma automatica pelo
+next-auth assim que acontece alguma acao.
+
+Documentacao: https://next-auth.js.org/configuration/callbacks
+
+Exemplo: 
+...
+  callbacks: {
+	// Callback executando em login
+    async signIn({ user, account, profile, email, credentials }) {
+      return true
+    },
+    async jwt({ token, user, account, profile, isNewUser }) {
+      return token
+    }
+...
+
+!* passar props de signIn dentro de {} !*
+
+ERRO: ACESS DENIED  You do not have permission to sign in:
+* Como a caixa de email esta marcada como unica no bd, toda vez
+  que ela for registrada corretamente teremos que deleta-la para 
+  realizar login novamente
+  
+|14|===--> Gerando sessão de checkout<--===|14| 
+
+Documentacao de checkout da stripe: 
+https://stripe.com/docs/api/checkout/sessions
+
+!* Todas as chaves env do next sao escondidas, para deixar ela publica precisamos 
+!* declarar NEXT_PUBLIC_ antes da variavel. Ex: NEXT_PUBLIC_API_KEY = 40028922    
+
+Os 3 lugares dentro do next para fazer operacoes que precisam de seguranca:
+	• getServerSideProps (SSR) <=\
+	• getStaticProps (SSG)     <= So sao utilizados quando a pagina renderiza
+	• API routes  <- Usada pois a operacao provem de interacao do ususario				
+	
+|15|===--> Redirecionando para o Stripe <--===|15|	
+!* ERRO 500 *!
+Pode ter diversos motivos, solucoes:
+	- Deslogar da aplicacao (sign out do github)
+	- Excluir users de faunaDB 
+	( ^- esses 2 primeiros serao necessarios varias vezes)
+	- Reiniciar aplicacao
+	- Verificar erros de digitacao
+	
+!* ERRO 500 NO SUBSCRIBE *!
+Declarar NEXTAUTH_SECRET em env.local com qualquer valor, nao esqueca de reiniciar
+a aplicacao
+	
+Anteriormente acessavamos as API routes atraves da URL, mas como é uma rota do 
+tipo POST precisamos utilizar axios ou fetch por exemplo.
+Usaremos axios para realizar o redirecionamento do usuario:
+	$ yarn add axios
+E outra biblioteca do stripe:
+	$ yarn add @stripe/stripe-js
+
+|16|===--> Webhooks do Stripe <--===|16|
+Webhooks: padrao muito utilizado para a integracao entre sistemas na web
+Usamos webhook para avisar a aplicacao que aconteceu alguma coisa por parte das
+aplicacoes de terceiros, na maioria das vezes por alguma rota htpp
+
+Baixar windows x86 64 dos releases da CLI do stripe:
+https://github.com/stripe/stripe-cli/releases
+
+Como eu fiz: 
+Criar pasta stripe-cli na raiz do projeto, mover stripe.exe para dentro dela
+Definir script em package.json para executar cli:
+ "stripe": "stripe-cli/stripe.exe listen --forward-to localhost:3000/api/webhooks"
+Executar: $ yarn stripe
+Acessar link mostrado no terminal e realizar a autorizacao  
+Executar novamente: $ yarn stripe
+Ao realizar um checkout (usar 42424242... no cartao de credito para teste) a CLI 
+ira registrar as acoes que ocorreram na aplicacao, porem para utilizarmos teremos
+que 
+
+---============================================---
+---==============>  FRONT-END   <==============---
+---============================================---
+|x|===--> Front-End Jamstack <--===|x| 
+
+|17|===--> Escolhendo um CMS <--===|17|
+
+Jamstack: J:Javascript, A:API, M:Markup
+
+CMS (Content Management System):
+
+- Wordpress 
+- Magento (E-commerce, melhor caso queira front e back concatenados)
+X Drupal
+X Joomla
+
+Headless CMS (Painel de administracao + API[HTTP,GraphQL ou SDK]):
+
+- Strapi (uso geral, porem apresenta problemas em grandes projetos)
+- Ghost (MUITO bom para blogs)
+- Keystone (uso geral)
+
+Pagos: 
+- GraphCMS 
+- Prismic CMS (melhor modelo de preco)
+- Contenful (caro, usado para caso precise muito de CMS)
+
+E-commerce:
+- Shopify (mais estabelecido)
+- Saleor (promissor, e mais novo)
+
+|18|===--> Configurando Prismic CMS <--===|18|
+!* ERRO PRISMIC LEGADO *!
+Ativar legacy mode na configuracao do projeto Prismic para igualar
+ao painel de controle do video
+
+Utilizar prismic antigo para igualar ao do video:
+	$ yarn add @prismicio/client@^4
+	
+
+|19|===--> Consumindo API do Prismic <--===|19|	
+Documentacao: https://prismic.io/docs/fetch-data-vanilla-javascript
+	$ yarn add @prismicio/client
+	
+|20|===--> Listando posts em tela <--===|20|	
+
+Quando recebemos dados geralmente o conteudo nao vem do formato que precisamos.
+
+Convertendo formatos do prismic para algum formato de preferencia (HTML por exemplo)
+	$ yarn add prismic-dom
+	$ yarn add types/prismic-dom -D
+	
+!* ERRO na aula Navegação no menu *!
+	Error: Invalid <Link>:
+	- Usar <Link legacyBehavior> 
+	
+|21|===--> Página: Post <--===|21|		
+Todo conteudo gerado de forma estatica nao sera protegida, ou seja todos terao acesso a 
+ela, entao ao inves de usarmos getStaticProps iremos usar getServerSideProps
+
+
+|22|===--> Página: Post <--===|22|	
+!* EVITAR ERROS GERAIS *!
+TypeError:
+	Devido à atualização do next-auth, a forma de utilizar os callbacks agora é um pouquinho diferente.
+	Nos callbacks agora, é necessário desestruturar todas as propriedades, tipo assim:
+		async session({ session })
+		
+Property 'activeSubscription' does not exist on type 'Session':
+1 - Criar uma pasta com o nome @types dentro da pasta src
+2 - Dentro da pasta @types, criar um arquivo chamado next-auth.d.ts
+E aí você pode colocar esse conteúdo dentro do arquivo:
+	import NextAuth from "next-auth"
+
+	declare module "next-auth" {
+	  interface Session {
+		activeSubscription: string | null;
+	  }
+	}	
+
+Porem com isso acaba dando um erro no arquivo [...nextauth].ts por conta da interface do fauna.
+Para corrigir ele, você pode passar um generic para a query, informando que o retorno dela é uma
+string, assim:	
+
+const userActiveSubscription = await fauna.query<string>(
+
+|23|===--> Gerando previews estáticos <--===|23|
+
+Next possue alguns metodos de geracoes de paginas estaticas, os principais jeitos sao:
+
+Gerar a pagina estatica durante a build, ppra que quando a pessoa acesse a aplicacao estas paginas
+ja estejam geradas, porem se tivermos por exemplo 1000 paginas estaticas a build ficara muito pesada.
+
+O outro metodo gera a pagina estatica no primeiro acesso, esses metodos podem ser utilizados dependendo
+do contexto do seu programa, podemos por exemplo gerar os posts mais ''quentes'' do projeto e depois
+gerar as outras paginas quando forem requisitadas.
